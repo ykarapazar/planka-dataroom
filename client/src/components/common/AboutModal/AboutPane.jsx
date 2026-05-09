@@ -41,6 +41,25 @@ const AboutPane = React.memo(() => {
         <Image centered src={aboutLogo} size="large" />
       </a>
       <div className={styles.version}>Community v{version}</div>
+      <p style={{ textAlign: 'center', marginTop: '0.75em', fontSize: '0.9em' }}>
+        Modified by{' '}
+        <a
+          href="https://karapazarhukuk.com"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Karapazar Hukuk
+        </a>{' '}
+        for the Paydaş × Taranis data room. Modifications source:{' '}
+        <a
+          href="https://github.com/ykarapazar/planka-dataroom"
+          target="_blank"
+          rel="noreferrer"
+        >
+          ykarapazar/planka-dataroom
+        </a>
+        .
+      </p>
       <Divider horizontal>
         <Header as="h4">
           {t('common.whatsNew', {
