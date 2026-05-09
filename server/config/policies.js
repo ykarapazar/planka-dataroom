@@ -42,6 +42,21 @@ module.exports.policies = {
 
   'projects/create': ['is-authenticated', 'is-external', 'is-admin-or-project-owner'],
 
+  // -- Karapazar Hukuk additions: groups + ACL endpoints (plan §6.5) --
+  'groups/index': ['is-authenticated', 'is-admin'],
+  'groups/create': ['is-authenticated', 'is-admin'],
+  'groups/delete': ['is-authenticated', 'is-admin'],
+  'group-memberships/index': ['is-authenticated', 'is-admin'],
+  'group-memberships/create': ['is-authenticated', 'is-admin'],
+  'group-memberships/delete': ['is-authenticated', 'is-admin'],
+  'board-acls/index': ['is-authenticated', 'is-admin'],
+  'board-acls/create': ['is-authenticated', 'is-admin'],
+  'board-acls/delete': ['is-authenticated', 'is-admin'],
+  'card-acls/index': ['is-authenticated', 'is-admin'],
+  'card-acls/create': ['is-authenticated', 'is-admin'],
+  'card-acls/delete': ['is-authenticated', 'is-admin'],
+  // -- end Karapazar Hukuk additions --
+
   '_internal/update-config': ['is-authenticated', 'is-internal'],
 
   index: true,

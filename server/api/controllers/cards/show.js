@@ -135,22 +135,16 @@ module.exports = {
       .getPathToProjectById(inputs.id)
       .intercept('pathNotFound', () => Errors.CARD_NOT_FOUND);
 
-    if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-      const isProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        project.id,
-      );
-
-      if (!isProjectManager) {
-        const boardMembership = await BoardMembership.qm.getOneByBoardIdAndUserId(
-          card.boardId,
-          currentUser.id,
-        );
-
-        if (!boardMembership) {
-          throw Errors.CARD_NOT_FOUND; // Forbidden
-        }
-      }
+    // Karapazar Hukuk addition (plan §6.4): unify with canAccessCard so
+    // per-card ACL grants and our group-mediated grants are honored.
+    const canView = await sails.helpers.users.canAccessCard.with({
+      userId: currentUser.id,
+      cardId: card.id,
+      requiredLevel: 'view',
+      request: this.req,
+    });
+    if (!canView) {
+      throw Errors.CARD_NOT_FOUND; // 404
     }
 
     card.isSubscribed = await sails.helpers.users.isCardSubscriber(currentUser.id, card.id);

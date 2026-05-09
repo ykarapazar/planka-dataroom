@@ -182,22 +182,16 @@ module.exports = {
       .getPathToProjectById(inputs.id)
       .intercept('pathNotFound', () => Errors.BOARD_NOT_FOUND);
 
-    if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-      const isProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        project.id,
-      );
-
-      if (!isProjectManager) {
-        const boardMembership = await BoardMembership.qm.getOneByBoardIdAndUserId(
-          board.id,
-          currentUser.id,
-        );
-
-        if (!boardMembership) {
-          throw Errors.BOARD_NOT_FOUND; // Forbidden
-        }
-      }
+    // Karapazar Hukuk addition (plan §6.4): unify the admin/manager/membership
+    // gate with the new board_acls grants via canAccessBoard.
+    const canView = await sails.helpers.users.canAccessBoard.with({
+      userId: currentUser.id,
+      boardId: board.id,
+      requiredLevel: 'view',
+      request: this.req,
+    });
+    if (!canView) {
+      throw Errors.BOARD_NOT_FOUND; // 404 (don't distinguish exists-but-no-access)
     }
 
     board.isSubscribed = await sails.helpers.users.isBoardSubscriber(currentUser.id, board.id);

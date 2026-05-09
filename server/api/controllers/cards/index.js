@@ -204,22 +204,16 @@ module.exports = {
       .getPathToProjectById(inputs.listId)
       .intercept('pathNotFound', () => Errors.LIST_NOT_FOUND);
 
-    if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-      const isProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        project.id,
-      );
-
-      if (!isProjectManager) {
-        const boardMembership = await BoardMembership.qm.getOneByBoardIdAndUserId(
-          list.boardId,
-          currentUser.id,
-        );
-
-        if (!boardMembership) {
-          throw Errors.LIST_NOT_FOUND; // Forbidden
-        }
-      }
+    // Karapazar Hukuk addition (plan §6.4): unified board access check via
+    // canAccessBoard (admin / manager / member / board_acl).
+    const canViewBoard = await sails.helpers.users.canAccessBoard.with({
+      userId: currentUser.id,
+      boardId: list.boardId,
+      requiredLevel: 'view',
+      request: this.req,
+    });
+    if (!canViewBoard) {
+      throw Errors.LIST_NOT_FOUND; // 404
     }
 
     let filterUserIds;
@@ -243,12 +237,29 @@ module.exports = {
       filterLabelIds = filterLabelIds.filter((labelId) => availableLabelIdsSet.has(labelId));
     }
 
-    const cards = await Card.qm.getByEndlessListId(list.id, {
+    let cards = await Card.qm.getByEndlessListId(list.id, {
       before: inputs.before,
       search: inputs.search,
       userIds: filterUserIds,
       labelIds: filterLabelIds,
     });
+
+    // Karapazar Hukuk addition (plan §6.3): per-card ACL filter. Empty-ACL
+    // fast-path inside canAccessCard short-circuits when card_acls is empty,
+    // which is the common case in v1.
+    if (cards.length > 0 && currentUser.role !== User.Roles.ADMIN) {
+      const allowed = await Promise.all(
+        cards.map((c) =>
+          sails.helpers.users.canAccessCard.with({
+            userId: currentUser.id,
+            cardId: c.id,
+            requiredLevel: 'view',
+            request: this.req,
+          }),
+        ),
+      );
+      cards = cards.filter((_c, i) => allowed[i]);
+    }
 
     const cardIds = sails.helpers.utils.mapRecords(cards);
 

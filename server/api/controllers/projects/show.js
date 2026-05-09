@@ -141,12 +141,34 @@ module.exports = {
     let boards;
     if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
       if (!isProjectManager) {
-        if (boardMemberships.length === 0) {
+        // Karapazar Hukuk addition (plan §6.4): union BoardMembership boards
+        // with boards where the user (or any of the user's groups) has a
+        // board_acls grant. Either path lets the user discover the board.
+        const memberBoardIds = sails.helpers.utils.mapRecords(boardMemberships, 'boardId');
+
+        const directAcls = await BoardAcl.qm.getByUserId(currentUser.id);
+        const userGroupIds = await sails.helpers.groups.getUserGroups.with({
+          userId: currentUser.id,
+        });
+        this.req._userGroupsCache = userGroupIds;
+        const groupAcls = await BoardAcl.qm.getByGroupIds(userGroupIds);
+
+        const aclBoardIds = _.uniq([
+          ...directAcls.map((a) => a.boardId),
+          ...groupAcls.map((a) => a.boardId),
+        ]);
+
+        const allBoardIds = _.uniq([...memberBoardIds, ...aclBoardIds]);
+        if (allBoardIds.length === 0) {
           throw Errors.PROJECT_NOT_FOUND; // Forbidden
         }
 
-        const boardIds = sails.helpers.utils.mapRecords(boardMemberships, 'boardId');
-        boards = await Board.qm.getByIds(boardIds);
+        // Restrict to boards in this project (board_acls might span projects).
+        const fetched = await Board.qm.getByIds(allBoardIds);
+        boards = fetched.filter((b) => b.projectId === project.id);
+        if (boards.length === 0) {
+          throw Errors.PROJECT_NOT_FOUND; // Forbidden
+        }
       }
     }
 

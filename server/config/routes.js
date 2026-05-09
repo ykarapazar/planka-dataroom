@@ -235,6 +235,24 @@ module.exports.routes = {
 
   'PATCH /api/_internal/config': '_internal/update-config',
 
+  // -- Karapazar Hukuk additions: groups + per-board / per-card ACL (plan §6.5) --
+  'GET /api/groups': 'groups/index',
+  'POST /api/groups': 'groups/create',
+  'DELETE /api/groups/:id': 'groups/delete',
+
+  'GET /api/groups/:groupId/group-memberships': 'group-memberships/index',
+  'POST /api/groups/:groupId/group-memberships': 'group-memberships/create',
+  'DELETE /api/group-memberships/:id': 'group-memberships/delete',
+
+  'GET /api/boards/:boardId/board-acls': 'board-acls/index',
+  'POST /api/boards/:boardId/board-acls': 'board-acls/create',
+  'DELETE /api/board-acls/:id': 'board-acls/delete',
+
+  'GET /api/cards/:cardId/card-acls': 'card-acls/index',
+  'POST /api/cards/:cardId/card-acls': 'card-acls/create',
+  'DELETE /api/card-acls/:id': 'card-acls/delete',
+  // -- end Karapazar Hukuk additions --
+
   'GET /swagger.json': 'swagger/show',
 
   'GET /favicons/*': {
