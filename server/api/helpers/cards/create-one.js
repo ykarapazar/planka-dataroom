@@ -87,14 +87,14 @@ module.exports = {
       listChangedAt: new Date().toISOString(),
     });
 
-    sails.sockets.broadcast(
-      `board:${card.boardId}`,
-      'cardCreate',
-      {
-        item: card,
-      },
-      inputs.request,
-    );
+    // Karapazar Hukuk addition (plan §6.6): per-recipient broadcast when the
+    // card has its own ACL; falls back to board-room broadcast otherwise.
+    await sails.helpers.sockets.broadcastCard.with({
+      cardId: card.id,
+      boardId: card.boardId,
+      eventName: 'cardCreate',
+      payload: { item: card },
+    });
 
     const webhooks = await Webhook.qm.getAll();
 

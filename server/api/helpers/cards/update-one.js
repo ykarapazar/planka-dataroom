@@ -304,14 +304,14 @@ module.exports = {
 
         // TODO: add transfer action
       } else {
-        sails.sockets.broadcast(
-          `board:${card.boardId}`,
-          'cardUpdate',
-          {
-            item: card,
-          },
-          inputs.request,
-        );
+        // Karapazar Hukuk addition (plan §6.6): per-recipient broadcast when
+        // the card has its own ACL.
+        await sails.helpers.sockets.broadcastCard.with({
+          cardId: card.id,
+          boardId: card.boardId,
+          eventName: 'cardUpdate',
+          payload: { item: card },
+        });
 
         if (values.list) {
           await sails.helpers.actions.createOne.with({

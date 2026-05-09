@@ -36,14 +36,14 @@ module.exports = {
     const card = await Card.qm.deleteOne(inputs.record.id);
 
     if (card) {
-      sails.sockets.broadcast(
-        `board:${card.boardId}`,
-        'cardDelete',
-        {
-          item: card,
-        },
-        inputs.request,
-      );
+      // Karapazar Hukuk addition (plan §6.6): per-recipient broadcast when the
+      // card has its own ACL.
+      await sails.helpers.sockets.broadcastCard.with({
+        cardId: card.id,
+        boardId: card.boardId,
+        eventName: 'cardDelete',
+        payload: { item: card },
+      });
 
       const webhooks = await Webhook.qm.getAll();
 
