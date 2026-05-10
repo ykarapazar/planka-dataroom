@@ -236,6 +236,8 @@ module.exports.routes = {
   'PATCH /api/_internal/config': '_internal/update-config',
 
   // -- Karapazar Hukuk additions: groups + per-board / per-card ACL (plan §6.5) --
+  'GET /api/cards/visible': 'cards/visible',
+
   'GET /api/groups': 'groups/index',
   'POST /api/groups': 'groups/create',
   'DELETE /api/groups/:id': 'groups/delete',
