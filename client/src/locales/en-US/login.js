@@ -13,7 +13,7 @@ export default {
       or: 'Or',
       pageNotFound_title: 'Page Not Found',
       password: 'Password',
-      poweredByPlanka: 'Powered by <1>PLANKA</1>',
+      poweredByPlanka: 'Powered by <1>Karapazar Hukuk</1>',
       serverConnectionFailed: 'Server connection failed',
       unknownError: 'Unknown error, try again later',
       useSingleSignOn: 'Use single sign-on',
