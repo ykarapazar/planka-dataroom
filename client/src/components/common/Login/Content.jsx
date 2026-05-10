@@ -203,12 +203,14 @@ const Content = React.memo(() => {
               <div className={styles.logoWrapper}>
                 <img src={logo} alt="" className={styles.logo} />
               </div>
-              <Header
-                as="h1"
-                textAlign="center"
-                content={bootstrap.instanceName || 'PLANKA'}
-                className={styles.formTitle}
-              />
+              {bootstrap.instanceName && (
+                <Header
+                  as="h1"
+                  textAlign="center"
+                  content={bootstrap.instanceName}
+                  className={styles.formTitle}
+                />
+              )}
               <Header
                 as="h2"
                 textAlign="center"
